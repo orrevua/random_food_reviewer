@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { useTranslation } from '../i18n/context'
 import LocationPreview from '../components/LocationPreview'
 import ReviewRow from '../components/ReviewRow'
 import {
@@ -19,6 +20,7 @@ import {
 export default function EstablishmentDetail() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const [search, setSearch] = useSearchParams()
   const [est, setEst] = useState<EstablishmentWithReview | null>(null)
@@ -83,7 +85,7 @@ export default function EstablishmentDetail() {
 
   const onDelete = async () => {
     if (!est) return
-    if (!confirm(`Excluir estabelecimento "${est.name}"?`)) return
+    if (!confirm(t('category.confirmDeleteEstablishment', { name: est.name }))) return
     try {
       await deleteEstablishment(est.id)
       navigate(`/category/${est.category_id}`)
@@ -99,32 +101,32 @@ export default function EstablishmentDetail() {
     setSearch(next, { replace: true })
   }
 
-  if (loading) return <p>Carregando…</p>
+  if (loading) return <p>{t('common.loading')}</p>
   if (!est)
     return (
       <div className="stack">
-        <p><Link to="/">← Voltar</Link></p>
-        <p>Estabelecimento não encontrado.</p>
+        <p><Link to="/">{t('common.back')}</Link></p>
+        <p>{t('establishment.notFound')}</p>
       </div>
     )
 
-  const addedAt = new Date(est.created_at).toLocaleDateString('pt-BR')
+  const addedAt = new Date(est.created_at).toLocaleDateString(locale === 'pt' ? 'pt-BR' : 'en-US')
 
   return (
     <div className="stack">
-      <p><Link to={`/category/${est.category_id}`}>← Voltar</Link></p>
+      <p><Link to={`/category/${est.category_id}`}>{t('common.back')}</Link></p>
       <div className="est-detail-header card stack">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <h1>{est.name}</h1>
           <div className="card-actions">
             {canEdit && (
               <button type="button" onClick={toggleEdit}>
-                {editing ? 'Fechar' : 'Editar info'}
+                {editing ? t('common.close') : t('establishment.editInfo')}
               </button>
             )}
             {canEdit && (
               <button type="button" className="danger-btn" onClick={onDelete}>
-                Excluir
+                {t('common.delete')}
               </button>
             )}
           </div>
@@ -145,7 +147,7 @@ export default function EstablishmentDetail() {
           </div>
         )}
         <p style={{ color: 'var(--ink-soft)', fontSize: 14 }}>
-          Adicionado por {adderProfile?.display_name ?? 'Usuário'} em {addedAt}
+          {t('establishment.addedBy', { name: adderProfile?.display_name ?? t('common.user'), date: addedAt })}
         </p>
         {editing && canEdit && (
           <EditInfoForm
@@ -165,16 +167,16 @@ export default function EstablishmentDetail() {
 
       {sortedReviews.length === 0 ? (
         <div className="card stack">
-          <p>Nenhuma avaliação ainda. Seja o primeiro a avaliar.</p>
+          <p>{t('establishment.noReviewsYet')}</p>
           <Link to={`/establishment/${est.id}/review`}>
-            <button type="button" className="primary">Avaliar</button>
+            <button type="button" className="primary">{t('category.reviewOne')}</button>
           </Link>
         </div>
       ) : (
         <div className="stack">
           {!myReview && (
             <Link to={`/establishment/${est.id}/review`}>
-              <button type="button" className="primary">Avaliar</button>
+              <button type="button" className="primary">{t('category.reviewOne')}</button>
             </Link>
           )}
           {sortedReviews.map((rev) => {
@@ -185,7 +187,7 @@ export default function EstablishmentDetail() {
                 {isMine && (
                   <div className="review-actions">
                     <Link to={`/establishment/${est.id}/review`}>
-                      Editar minha avaliação
+                      {t('establishment.editMyReview')}
                     </Link>
                   </div>
                 )}
@@ -207,6 +209,7 @@ function EditInfoForm({
   onSaved: () => void | Promise<void>
   onError: (msg: string) => void
 }) {
+  const { t } = useTranslation()
   const [name, setName] = useState(est.name)
   const [address, setAddress] = useState(est.address ?? '')
   const [insta, setInsta] = useState(est.instagram_handle ?? '')
@@ -236,19 +239,19 @@ function EditInfoForm({
       onSubmit={submit}
       style={{ padding: 8, borderLeft: '3px solid var(--border)', marginLeft: 8 }}
     >
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome" />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('establishment.namePlaceholder')} />
       <input
         value={address}
         onChange={(e) => setAddress(e.target.value)}
-        placeholder="Endereço (opcional)"
+        placeholder={t('category.addressPlaceholder')}
       />
       <input
         value={insta}
         onChange={(e) => setInsta(e.target.value)}
-        placeholder="Instagram @ (opcional)"
+        placeholder={t('category.instagramPlaceholder')}
       />
       <button type="submit" className="primary" disabled={busy}>
-        {busy ? 'Salvando…' : 'Salvar'}
+        {busy ? t('common.saving') : t('common.save')}
       </button>
     </form>
   )

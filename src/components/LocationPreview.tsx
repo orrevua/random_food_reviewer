@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from '../i18n/context'
 
 export default function LocationPreview({ address }: { address: string }) {
+  const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
   const showTimer = useRef<number | null>(null)
   const hideTimer = useRef<number | null>(null)
@@ -42,12 +44,12 @@ export default function LocationPreview({ address }: { address: string }) {
           <iframe
             className="loc-frame"
             src={embedUrl}
-            title={`Mapa: ${address}`}
+            title={t('establishment.mapAlt', { address })}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
           <a className="loc-link" href={mapUrl} target="_blank" rel="noopener noreferrer">
-            Abrir no Google Maps
+            {t('location.openInMaps')}
           </a>
         </div>
       )}

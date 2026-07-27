@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { useTranslation } from '../i18n/context'
 import StarBar from '../components/StarBar'
 import {
   createEstablishment,
@@ -22,6 +23,7 @@ import {
 export default function CategoryDetail() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [category, setCategory] = useState<Category | null>(null)
   const [role, setRole] = useState<'owner' | 'member' | null>(null)
   const [rows, setRows] = useState<EstablishmentWithReview[]>([])
@@ -104,7 +106,7 @@ export default function CategoryDetail() {
   }
 
   const onDeleteEstablishment = async (e: Establishment) => {
-    if (!confirm(`Excluir estabelecimento "${e.name}"?`)) return
+    if (!confirm(t('category.confirmDeleteEstablishment', { name: e.name }))) return
     try {
       await deleteEstablishment(e.id)
       await load()
@@ -115,34 +117,34 @@ export default function CategoryDetail() {
 
   return (
     <div className="stack">
-      <p><Link to="/">← Voltar</Link></p>
+      <p><Link to="/">{t('common.back')}</Link></p>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <h2>
-          {category ? category.name : 'Categoria'}{' '}
+          {category ? category.name : t('category.fallbackTitle')}{' '}
           {role && <RoleBadge role={role} />}
         </h2>
         {role === 'owner' && (
           <button type="button" onClick={onShare}>
-            {copied ? 'Copiado!' : 'Compartilhar'}
+            {copied ? t('category.copied') : t('category.share')}
           </button>
         )}
       </div>
       {role === 'owner' && copied && (
         <p className="msg-success">
-          Link copiado. Qualquer pessoa com este link pode ver e adicionar à categoria.
+          {t('category.shareWarning')}
         </p>
       )}
 
       {role === 'owner' && (
         <div className="card stack">
           <div className="row" style={{ justifyContent: 'space-between' }}>
-            <strong>Gerenciar tópicos</strong>
+            <strong>{t('category.manageTopics')}</strong>
             <button
               type="button"
               className="ghost"
               onClick={() => setShowManage((v) => !v)}
             >
-              {showManage ? 'Fechar' : 'Abrir'}
+              {showManage ? t('common.close') : t('common.open')}
             </button>
           </div>
           {showManage && (
@@ -158,12 +160,12 @@ export default function CategoryDetail() {
 
       <div className="card stack">
         <button type="button" className="primary" onClick={onRoll} style={{ fontSize: 20 }}>
-          🎲 Rolar dado
+          {t('category.rollDice')}
         </button>
-        {rollResult === 'empty' && <p>Todos avaliados — adicione mais!</p>}
+        {rollResult === 'empty' && <p>{t('category.allReviewed')}</p>}
         {rollResult && rollResult !== 'empty' && (
           <p>
-            Vai em:{' '}
+            {t('category.goTo')}
             <Link to={`/establishment/${rollResult.id}`}>
               <strong>{rollResult.name}</strong>
             </Link>
@@ -174,19 +176,19 @@ export default function CategoryDetail() {
       <form className="stack" onSubmit={onAdd}>
         <div className="row">
           <input
-            placeholder="Novo estabelecimento"
+            placeholder={t('category.newEstablishmentPlaceholder')}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
-          <button type="submit">Adicionar</button>
+          <button type="submit">{t('common.add')}</button>
         </div>
         <input
-          placeholder="Endereço (opcional)"
+          placeholder={t('category.addressPlaceholder')}
           value={newAddress}
           onChange={(e) => setNewAddress(e.target.value)}
         />
         <input
-          placeholder="Instagram @ (opcional)"
+          placeholder={t('category.instagramPlaceholder')}
           value={newInsta}
           onChange={(e) => setNewInsta(e.target.value)}
         />
@@ -194,9 +196,9 @@ export default function CategoryDetail() {
 
       {error && <p className="msg-error">{error}</p>}
       {loading ? (
-        <p>Carregando…</p>
+        <p>{t('common.loading')}</p>
       ) : rows.length === 0 ? (
-        <p>Nenhum estabelecimento ainda.</p>
+        <p>{t('category.emptyEstablishments')}</p>
       ) : (
         <div className="stack">
           {rows.map((r) => (
@@ -236,6 +238,7 @@ function EstablishmentRow({
   role: 'owner' | 'member' | null
   onDelete: () => void
 }) {
+  const { t } = useTranslation()
   const canDelete =
     !!currentUserId && (currentUserId === est.user_id || role === 'owner')
   const reviews = est.reviews ?? []
@@ -261,7 +264,7 @@ function EstablishmentRow({
         </Link>
         <div className="est-row-meta">
           <span style={{ color: 'var(--ink-soft)', fontSize: 14 }}>
-            {reviews.length} {reviews.length === 1 ? 'avaliação' : 'avaliações'}
+            {t('category.reviewsCount', { n: reviews.length })}
           </span>
           {overallAvg != null ? (
             <>
@@ -276,12 +279,12 @@ function EstablishmentRow({
       <div className="card-actions">
         <Link to={`/establishment/${est.id}/review`}>
           <button type="button">
-            {hasMyReview ? 'Editar avaliação' : 'Avaliar'}
+            {hasMyReview ? t('category.editReview') : t('category.reviewOne')}
           </button>
         </Link>
         {canDelete && (
           <button type="button" className="danger-btn" onClick={onDelete}>
-            Excluir
+            {t('common.delete')}
           </button>
         )}
       </div>
@@ -290,9 +293,10 @@ function EstablishmentRow({
 }
 
 function RoleBadge({ role }: { role: 'owner' | 'member' }) {
+  const { t } = useTranslation()
   return (
     <span className="role-badge" style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-      {role === 'owner' ? 'dono' : 'convidado'}
+      {role === 'owner' ? t('dashboard.badgeOwner') : t('dashboard.badgeMember')}
     </span>
   )
 }
@@ -308,6 +312,7 @@ function ManageTopics({
   onChange: () => Promise<void>
   setError: (v: string | null) => void
 }) {
+  const { t } = useTranslation()
   const [newLabel, setNewLabel] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editLabel, setEditLabel] = useState('')
@@ -344,7 +349,7 @@ function ManageTopics({
   }
 
   const onDelete = async (id: string) => {
-    if (!confirm('Excluir este tópico? Isso apaga as notas históricas dele.')) return
+    if (!confirm(t('category.topics.confirmDelete'))) return
     try {
       await deleteTopic(id)
       await onChange()
@@ -356,12 +361,12 @@ function ManageTopics({
   return (
     <div className="stack">
       {topics.length === 0 ? (
-        <p style={{ color: 'var(--ink-soft)' }}>Sem tópicos ainda.</p>
+        <p style={{ color: 'var(--ink-soft)' }}>{t('category.topics.empty')}</p>
       ) : (
         <ul className="stack">
-          {topics.map((t) => (
-            <li key={t.id} className="row" style={{ justifyContent: 'space-between' }}>
-              {editingId === t.id ? (
+          {topics.map((topic) => (
+            <li key={topic.id} className="row" style={{ justifyContent: 'space-between' }}>
+              {editingId === topic.id ? (
                 <input
                   autoFocus
                   value={editLabel}
@@ -374,13 +379,13 @@ function ManageTopics({
                 />
               ) : (
                 <>
-                  <span onDoubleClick={() => startEdit(t)}>{t.label}</span>
+                  <span onDoubleClick={() => startEdit(topic)}>{topic.label}</span>
                   <div className="row">
-                    <button type="button" className="ghost" onClick={() => startEdit(t)}>
-                      Renomear
+                    <button type="button" className="ghost" onClick={() => startEdit(topic)}>
+                      {t('common.rename')}
                     </button>
-                    <button type="button" className="ghost" onClick={() => onDelete(t.id)}>
-                      Excluir
+                    <button type="button" className="ghost" onClick={() => onDelete(topic.id)}>
+                      {t('common.delete')}
                     </button>
                   </div>
                 </>
@@ -391,11 +396,11 @@ function ManageTopics({
       )}
       <form className="row" onSubmit={onAdd}>
         <input
-          placeholder="Novo tópico"
+          placeholder={t('category.topics.newPlaceholder')}
           value={newLabel}
           onChange={(e) => setNewLabel(e.target.value)}
         />
-        <button type="submit">Adicionar tópico</button>
+        <button type="submit">{t('category.topics.add')}</button>
       </form>
     </div>
   )

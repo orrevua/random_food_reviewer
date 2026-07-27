@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { useTranslation } from '../i18n/context'
 import ReviewForm, { type ReviewFormValues } from '../components/ReviewForm'
 import {
   createReview,
@@ -18,6 +19,7 @@ import {
 export default function ReviewPage() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [est, setEst] = useState<EstablishmentWithReview | null>(null)
   const [topics, setTopics] = useState<ReviewTopic[]>([])
@@ -83,12 +85,12 @@ export default function ReviewPage() {
     }
   }
 
-  if (loading) return <p>Carregando…</p>
+  if (loading) return <p>{t('common.loading')}</p>
   if (!est)
     return (
       <div className="stack">
-        <p><Link to="/">← Voltar</Link></p>
-        <p>Estabelecimento não encontrado.</p>
+        <p><Link to="/">{t('common.back')}</Link></p>
+        <p>{t('establishment.notFound')}</p>
       </div>
     )
 
@@ -99,9 +101,9 @@ export default function ReviewPage() {
 
   return (
     <div className="stack">
-      <p><Link to={`/establishment/${est.id}`}>← Voltar</Link></p>
+      <p><Link to={`/establishment/${est.id}`}>{t('common.back')}</Link></p>
       <h2>
-        {mode === 'edit' ? 'Editar avaliação' : 'Avaliar'}: {est.name}
+        {mode === 'edit' ? t('review.editTitle', { name: est.name }) : t('review.createTitle', { name: est.name })}
       </h2>
       <ReviewForm
         mode={mode}

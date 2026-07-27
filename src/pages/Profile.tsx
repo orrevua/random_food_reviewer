@@ -2,9 +2,11 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { errorMessage, getProfile, upsertProfile } from '../lib/db'
+import { useTranslation } from '../i18n/context'
 
 export default function Profile() {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [displayName, setDisplayName] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -27,7 +29,7 @@ export default function Profile() {
     setSuccess(null)
     try {
       await upsertProfile(user.id, displayName.trim())
-      setSuccess('Perfil salvo.')
+      setSuccess(t('profile.saved'))
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -37,25 +39,25 @@ export default function Profile() {
 
   return (
     <div className="stack">
-      <p><Link to="/">← Voltar</Link></p>
-      <h2>Perfil</h2>
+      <p><Link to="/">{t('common.back')}</Link></p>
+      <h2>{t('profile.title')}</h2>
       {loading ? (
-        <p>Carregando…</p>
+        <p>{t('common.loading')}</p>
       ) : (
         <form className="stack card" onSubmit={onSave}>
           <label className="stack">
-            <span>Nome de exibição</span>
+            <span>{t('profile.displayNameLabel')}</span>
             <input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Como você aparece nas avaliações"
+              placeholder={t('profile.displayNamePlaceholder')}
             />
           </label>
           <p style={{ color: 'var(--ink-soft)', fontSize: 13 }}>
-            Email: {user?.email}
+            {t('profile.emailLabel', { email: user?.email ?? '' })}
           </p>
           <button type="submit" className="primary" disabled={busy || !displayName.trim()}>
-            {busy ? 'Salvando…' : 'Salvar'}
+            {busy ? t('common.saving') : t('common.save')}
           </button>
           {error && <p className="msg-error">{error}</p>}
           {success && <p className="msg-success">{success}</p>}

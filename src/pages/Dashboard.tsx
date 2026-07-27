@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { useTranslation } from '../i18n/context'
 import {
   createCategory,
   deleteCategory,
@@ -12,6 +13,7 @@ import {
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [categories, setCategories] = useState<CategoryWithRole[]>([])
   const [name, setName] = useState('')
@@ -53,7 +55,7 @@ export default function Dashboard() {
   }
 
   const onDelete = async (c: CategoryWithRole) => {
-    if (!confirm(`Excluir categoria "${c.name}"? Isso apagará estabelecimentos e avaliações.`)) return
+    if (!confirm(t('dashboard.confirmDeleteCategory', { name: c.name }))) return
     setError(null)
     try {
       await deleteCategory(c.id)
@@ -71,32 +73,32 @@ export default function Dashboard() {
       {error && <p className="msg-error">{error}</p>}
 
       <section className="stack">
-        <h2>Minhas categorias</h2>
+        <h2>{t('dashboard.myCategories')}</h2>
         <form className="row" onSubmit={onAdd}>
           <input
-            placeholder="Nova categoria"
+            placeholder={t('dashboard.newCategoryPlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <button type="submit" className="primary">Adicionar</button>
+          <button type="submit" className="primary">{t('common.add')}</button>
         </form>
         {loading ? (
-          <p>Carregando…</p>
+          <p>{t('common.loading')}</p>
         ) : owned.length === 0 ? (
-          <p style={{ color: 'var(--ink-soft)' }}>Nenhuma categoria criada.</p>
+          <p style={{ color: 'var(--ink-soft)' }}>{t('dashboard.emptyOwned')}</p>
         ) : (
           <div className="stack">
             {owned.map((c) => (
               <div key={c.id} className="cat-card cat-card--owned">
                 <Link to={`/category/${c.id}`}>{c.name}</Link>
                 <div className="card-actions">
-                  <span className="role-badge">dono</span>
+                  <span className="role-badge">{t('dashboard.badgeOwner')}</span>
                   <button
                     type="button"
                     className="danger-btn"
                     onClick={() => onDelete(c)}
                   >
-                    Excluir
+                    {t('common.delete')}
                   </button>
                 </div>
               </div>
@@ -106,23 +108,23 @@ export default function Dashboard() {
       </section>
 
       <section className="stack">
-        <h2>Categorias compartilhadas comigo</h2>
+        <h2>{t('dashboard.sharedCategories')}</h2>
         <form className="row" onSubmit={onJoin}>
           <input
-            placeholder="Cole o UUID de convite"
+            placeholder={t('dashboard.invitePlaceholder')}
             value={inviteId}
             onChange={(e) => setInviteId(e.target.value)}
           />
-          <button type="submit">Entrar</button>
+          <button type="submit">{t('dashboard.join')}</button>
         </form>
         {loading ? null : joined.length === 0 ? (
-          <p style={{ color: 'var(--ink-soft)' }}>Nenhuma categoria compartilhada.</p>
+          <p style={{ color: 'var(--ink-soft)' }}>{t('dashboard.emptyJoined')}</p>
         ) : (
           <div className="stack">
             {joined.map((c) => (
               <div key={c.id} className="cat-card cat-card--joined">
                 <Link to={`/category/${c.id}`}>{c.name}</Link>
-                <span className="role-badge">convidado</span>
+                <span className="role-badge">{t('dashboard.badgeMember')}</span>
               </div>
             ))}
           </div>

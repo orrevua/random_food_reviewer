@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../lib/auth'
 import { errorMessage } from '../lib/db'
+import { useTranslation } from '../i18n/context'
+import LangToggle from '../components/LangToggle'
 
 export default function Login() {
   const { signIn, signUp } = useAuth()
+  const { t } = useTranslation()
   const [mode, setMode] = useState<'in' | 'up'>('in')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,7 +24,7 @@ export default function Login() {
         await signIn(email, password)
       } else {
         await signUp(email, password)
-        setInfo('Check your email to confirm your account (if confirmation is enabled).')
+        setInfo(t('login.checkEmail'))
       }
     } catch (err) {
       setError(errorMessage(err))
@@ -39,12 +42,15 @@ export default function Login() {
   return (
     <div className="auth-shell">
       <div className="auth-card">
+        <div className="row" style={{ justifyContent: 'flex-end' }}>
+          <LangToggle />
+        </div>
         <div className="auth-brand">
           <div className="auth-brand-mark">🍜</div>
           <div>
             <div className="auth-title">Food Reviewer</div>
             <div className="auth-subtitle">
-              {mode === 'in' ? 'Welcome back — sign in to continue.' : 'Create an account to start reviewing.'}
+              {mode === 'in' ? t('login.welcomeBack') : t('login.createAccountCta')}
             </div>
           </div>
         </div>
@@ -52,10 +58,10 @@ export default function Login() {
         <form className="stack-lg" onSubmit={submit}>
           <div className="stack">
             <label className="stack" style={{ gap: 6 }}>
-              <span style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Email</span>
+              <span style={{ fontSize: 13, color: 'var(--ink-soft)' }}>{t('login.emailLabel')}</span>
               <input
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('login.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
@@ -63,10 +69,10 @@ export default function Login() {
               />
             </label>
             <label className="stack" style={{ gap: 6 }}>
-              <span style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Password</span>
+              <span style={{ fontSize: 13, color: 'var(--ink-soft)' }}>{t('login.passwordLabel')}</span>
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('login.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
@@ -76,7 +82,7 @@ export default function Login() {
           </div>
 
           <button type="submit" className="primary" disabled={busy} style={{ width: '100%' }}>
-            {busy ? 'Please wait…' : mode === 'in' ? 'Sign in' : 'Create account'}
+            {busy ? t('common.pleaseWait') : mode === 'in' ? t('login.signIn') : t('login.createAccount')}
           </button>
         </form>
 
@@ -84,9 +90,9 @@ export default function Login() {
         {info && <p className="msg-success" style={{ marginTop: 16 }}>{info}</p>}
 
         <div style={{ marginTop: 20, textAlign: 'center', fontSize: 14, color: 'var(--ink-soft)' }}>
-          {mode === 'in' ? "Don't have an account?" : 'Already have an account?'}{' '}
+          {mode === 'in' ? t('login.noAccount') : t('login.haveAccount')}{' '}
           <button type="button" className="ghost" onClick={toggleMode} style={{ padding: '2px 4px', color: 'var(--accent)' }}>
-            {mode === 'in' ? 'Sign up' : 'Sign in'}
+            {mode === 'in' ? t('login.signUp') : t('login.signIn')}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { ReviewTopic } from '../lib/db'
+import { useTranslation } from '../i18n/context'
 
 export type ReviewFormValues = {
   scores: Record<string, number>
@@ -29,8 +30,9 @@ export default function ReviewForm({
   onSubmit: (values: ReviewFormValues) => void | Promise<void>
   onCancel?: () => void
 }) {
+  const { t } = useTranslation()
   const [scores, setScores] = useState<Record<string, number>>(() =>
-    Object.fromEntries(topics.map((t) => [t.id, initialScores?.[t.id] ?? 5])),
+    Object.fromEntries(topics.map((topic) => [topic.id, initialScores?.[topic.id] ?? 5])),
   )
   const [notes, setNotes] = useState(initialNotes)
   const [photo, setPhoto] = useState<File | null>(null)
@@ -55,8 +57,8 @@ export default function ReviewForm({
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (topics.some((t) => scores[t.id] == null)) {
-      setLocalError('Escolha uma nota para cada tópico.')
+    if (topics.some((topic) => scores[topic.id] == null)) {
+      setLocalError(t('reviewForm.pickForEachTopic'))
       return
     }
     setLocalError(null)
@@ -66,7 +68,7 @@ export default function ReviewForm({
   if (topics.length === 0) {
     return (
       <p className="msg-error">
-        Nenhum tópico configurado — peça ao dono da categoria para adicionar tópicos.
+        {t('reviewForm.noTopics')}
       </p>
     )
   }
@@ -79,13 +81,13 @@ export default function ReviewForm({
       onSubmit={submit}
       style={{ padding: 8, borderLeft: '3px solid var(--border)', marginLeft: 8 }}
     >
-      {topics.map((t) => (
-        <label key={t.id} className="row">
-          <span style={{ minWidth: 140 }}>{t.label}:</span>
+      {topics.map((topic) => (
+        <label key={topic.id} className="row">
+          <span style={{ minWidth: 140 }}>{topic.label}:</span>
           <select
-            value={scores[t.id] ?? 5}
+            value={scores[topic.id] ?? 5}
             onChange={(e) =>
-              setScores((prev) => ({ ...prev, [t.id]: Number(e.target.value) }))
+              setScores((prev) => ({ ...prev, [topic.id]: Number(e.target.value) }))
             }
           >
             {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -95,19 +97,19 @@ export default function ReviewForm({
         </label>
       ))}
       <textarea
-        placeholder="Notas"
+        placeholder={t('reviewForm.notesPlaceholder')}
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         rows={3}
       />
       <label className="stack" style={{ gap: 6 }}>
         <span style={{ fontSize: 13, color: 'var(--ink-soft)' }}>
-          Foto da comida (opcional)
+          {t('reviewForm.photoLabel')}
         </span>
         {showExisting && (
           <img
             src={initialPhotoUrl!}
-            alt="Foto atual"
+            alt={t('reviewForm.currentPhotoAlt')}
             style={{ maxWidth: 200, maxHeight: 200, borderRadius: 8, objectFit: 'cover' }}
           />
         )}
@@ -119,7 +121,7 @@ export default function ReviewForm({
               checked={removePhoto}
               onChange={(e) => setRemovePhoto(e.target.checked)}
             />
-            Remover foto atual
+            {t('reviewForm.removeCurrentPhoto')}
           </label>
         )}
         <input
@@ -130,18 +132,18 @@ export default function ReviewForm({
         {photoPreview && (
           <img
             src={photoPreview}
-            alt="Prévia"
+            alt={t('reviewForm.previewAlt')}
             style={{ maxWidth: 200, maxHeight: 200, borderRadius: 8, objectFit: 'cover' }}
           />
         )}
       </label>
       <div className="row">
         <button type="submit" className="primary" disabled={busy}>
-          {busy ? 'Salvando…' : mode === 'edit' ? 'Salvar alterações' : 'Salvar avaliação'}
+          {busy ? t('common.saving') : mode === 'edit' ? t('establishment.saveChanges') : t('reviewForm.saveReview')}
         </button>
         {onCancel && (
           <button type="button" className="ghost" onClick={onCancel} disabled={busy}>
-            Cancelar
+            {t('common.cancel')}
           </button>
         )}
       </div>

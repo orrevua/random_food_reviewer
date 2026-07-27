@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { errorMessage, joinCategory } from '../lib/db'
+import { useTranslation } from '../i18n/context'
 
 export default function Join() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
 
@@ -26,8 +28,8 @@ export default function Join() {
 
   return (
     <div className="stack">
-      <h2>Entrar na categoria…</h2>
-      {error ? <p className="msg-error">{error}</p> : <p>Processando convite…</p>}
+      <h2>{t('join.title')}</h2>
+      {error ? <p className="msg-error">{error}</p> : <p>{t('join.processing')}</p>}
     </div>
   )
 }

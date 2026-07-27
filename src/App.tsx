@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './lib/auth'
 import { getProfile } from './lib/db'
+import { useTranslation } from './i18n/context'
+import LangToggle from './components/LangToggle'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import CategoryDetail from './pages/CategoryDetail'
@@ -12,6 +14,7 @@ import Profile from './pages/Profile'
 
 function Shell() {
   const { session, loading, signOut, user } = useAuth()
+  const { t } = useTranslation()
   const [displayName, setDisplayName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -33,7 +36,7 @@ function Shell() {
   if (loading) {
     return (
       <div className="auth-shell">
-        <p style={{ color: 'var(--ink-soft)' }}>Loading…</p>
+        <p style={{ color: 'var(--ink-soft)' }}>{t('common.loading')}</p>
       </div>
     )
   }
@@ -51,7 +54,8 @@ function Shell() {
             <Link to="/profile" style={{ color: 'var(--ink)', textDecoration: 'none' }}>
               {displayName ?? user?.email}
             </Link>
-            <button type="button" onClick={() => signOut()}>Sign out</button>
+            <LangToggle />
+            <button type="button" onClick={() => signOut()}>{t('app.signOut')}</button>
           </div>
         </div>
       </header>
