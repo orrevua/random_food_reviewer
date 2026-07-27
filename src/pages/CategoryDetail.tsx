@@ -11,10 +11,12 @@ import {
   errorMessage,
   getCategory,
   getCategoryRole,
+  listCategoryMembers,
   listEstablishments,
   listTopics,
   renameTopic,
   type Category,
+  type CategoryMemberWithProfile,
   type Establishment,
   type EstablishmentWithReview,
   type ReviewTopic,
@@ -28,6 +30,7 @@ export default function CategoryDetail() {
   const [role, setRole] = useState<'owner' | 'member' | null>(null)
   const [rows, setRows] = useState<EstablishmentWithReview[]>([])
   const [topics, setTopics] = useState<ReviewTopic[]>([])
+  const [members, setMembers] = useState<CategoryMemberWithProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
@@ -41,16 +44,18 @@ export default function CategoryDetail() {
     if (!id || !user) return
     setLoading(true)
     try {
-      const [cat, est, tps, r] = await Promise.all([
+      const [cat, est, tps, r, mems] = await Promise.all([
         getCategory(id),
         listEstablishments(id),
         listTopics(id),
         getCategoryRole(id, user.id),
+        listCategoryMembers(id),
       ])
       setCategory(cat)
       setRows(est)
       setTopics(tps)
       setRole(r)
+      setMembers(mems)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -193,6 +198,27 @@ export default function CategoryDetail() {
           onChange={(e) => setNewInsta(e.target.value)}
         />
       </form>
+
+      <div className="card stack">
+        <strong>{t('category.members', { n: members.length })}</strong>
+        {members.length === 0 ? (
+          <p style={{ color: 'var(--ink-soft)' }}>{t('category.membersEmpty')}</p>
+        ) : (
+          <ul className="stack" style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
+            {members.map((m) => (
+              <li key={m.user_id} className="row" style={{ justifyContent: 'space-between' }}>
+                <span>
+                  {m.display_name ?? t('common.user')}
+                  {user?.id === m.user_id && t('reviewRow.youSuffix')}
+                </span>
+                <span className="role-badge">
+                  {m.role === 'owner' ? t('dashboard.badgeOwner') : t('dashboard.badgeMember')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {error && <p className="msg-error">{error}</p>}
       {loading ? (

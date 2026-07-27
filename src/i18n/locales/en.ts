@@ -76,6 +76,8 @@ const en: { [K in keyof typeof pt]: string } = {
   'category.topics.newPlaceholder': 'New topic',
   'category.topics.add': 'Add topic',
   'category.topics.confirmDelete': 'Delete this topic? Historical scores for it will be erased.',
+  'category.members': 'Members ({{n}})',
+  'category.membersEmpty': 'Nobody has joined yet.',
 
   // EstablishmentDetail
   'establishment.notFound': 'Establishment not found.',

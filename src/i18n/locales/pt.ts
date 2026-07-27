@@ -74,6 +74,8 @@ const pt = {
   'category.topics.newPlaceholder': 'Novo tópico',
   'category.topics.add': 'Adicionar tópico',
   'category.topics.confirmDelete': 'Excluir este tópico? Isso apaga as notas históricas dele.',
+  'category.members': 'Membros ({{n}})',
+  'category.membersEmpty': 'Ninguém entrou ainda.',
 
   // EstablishmentDetail
   'establishment.notFound': 'Estabelecimento não encontrado.',

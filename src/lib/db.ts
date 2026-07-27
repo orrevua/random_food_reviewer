@@ -161,6 +161,29 @@ export async function getCategoryRole(
   return (data?.role as 'owner' | 'member' | undefined) ?? null
 }
 
+export type CategoryMemberWithProfile = CategoryMember & {
+  display_name: string | null
+}
+
+export async function listCategoryMembers(
+  categoryId: string,
+): Promise<CategoryMemberWithProfile[]> {
+  const { data, error } = await supabase
+    .from('category_members')
+    .select('*')
+    .eq('category_id', categoryId)
+    .order('joined_at', { ascending: true })
+  if (error) throw error
+  const members = (data ?? []) as CategoryMember[]
+  if (members.length === 0) return []
+  const profiles = await listProfiles(members.map((m) => m.user_id))
+  const byId = new Map(profiles.map((p) => [p.user_id, p]))
+  return members.map((m) => ({
+    ...m,
+    display_name: byId.get(m.user_id)?.display_name ?? null,
+  }))
+}
+
 export async function getCategory(id: string): Promise<Category | null> {
   const { data, error } = await supabase.from('categories').select('*').eq('id', id).maybeSingle()
   if (error) throw error
