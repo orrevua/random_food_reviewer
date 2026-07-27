@@ -3,34 +3,23 @@ import { useTranslation } from '../i18n/context'
 export default function LangToggle() {
   const { locale, setLocale } = useTranslation()
   return (
-    <span className="lang-toggle" aria-label="Language">
+    <div className="lang-toggle" role="group" aria-label="Language">
       <button
         type="button"
-        className="ghost"
+        className={`lang-toggle-option ${locale === 'en' ? 'is-active' : ''}`}
         onClick={() => setLocale('en')}
         aria-pressed={locale === 'en'}
-        style={{
-          padding: '2px 6px',
-          fontWeight: locale === 'en' ? 700 : 400,
-          textDecoration: locale === 'en' ? 'underline' : 'none',
-        }}
       >
         EN
       </button>
-      <span aria-hidden style={{ color: 'var(--ink-soft)' }}>|</span>
       <button
         type="button"
-        className="ghost"
+        className={`lang-toggle-option ${locale === 'pt' ? 'is-active' : ''}`}
         onClick={() => setLocale('pt')}
         aria-pressed={locale === 'pt'}
-        style={{
-          padding: '2px 6px',
-          fontWeight: locale === 'pt' ? 700 : 400,
-          textDecoration: locale === 'pt' ? 'underline' : 'none',
-        }}
       >
         PT
       </button>
-    </span>
+    </div>
   )
 }

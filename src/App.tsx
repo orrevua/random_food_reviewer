@@ -50,12 +50,21 @@ function Shell() {
             <span aria-hidden>🍜</span>
             <span>Food Reviewer</span>
           </Link>
-          <div className="user-chip">
-            <Link to="/profile" style={{ color: 'var(--ink)', textDecoration: 'none' }}>
-              {displayName ?? user?.email}
-            </Link>
+          <div className="header-actions">
             <LangToggle />
-            <button type="button" onClick={() => signOut()}>{t('app.signOut')}</button>
+            <Link to="/profile" className="user-chip" title={t('app.signOut')}>
+              <span className="user-chip-avatar" aria-hidden>👤</span>
+              <span className="user-chip-name">{displayName ?? user?.email}</span>
+            </Link>
+            <button
+              type="button"
+              className="ghost signout-btn"
+              onClick={() => signOut()}
+              aria-label={t('app.signOut')}
+              title={t('app.signOut')}
+            >
+              {t('app.signOut')}
+            </button>
           </div>
         </div>
       </header>
