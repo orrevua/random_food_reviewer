@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { errorMessage, getProfile, upsertProfile } from '../lib/db'
 import { useTranslation } from '../i18n/context'
+import Spinner from '../components/Spinner'
 
 export default function Profile() {
   const { user } = useAuth()
@@ -42,7 +43,7 @@ export default function Profile() {
       <p><Link to="/">{t('common.back')}</Link></p>
       <h2>{t('profile.title')}</h2>
       {loading ? (
-        <p>{t('common.loading')}</p>
+        <Spinner block label={t('common.loading')} />
       ) : (
         <form className="stack card" onSubmit={onSave}>
           <label className="stack">
@@ -57,7 +58,7 @@ export default function Profile() {
             {t('profile.emailLabel', { email: user?.email ?? '' })}
           </p>
           <button type="submit" className="primary" disabled={busy || !displayName.trim()}>
-            {busy ? t('common.saving') : t('common.save')}
+            {busy ? <Spinner size="sm" label={t('common.saving')} /> : t('common.save')}
           </button>
           {error && <p className="msg-error">{error}</p>}
           {success && <p className="msg-success">{success}</p>}

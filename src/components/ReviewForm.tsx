@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { ReviewTopic } from '../lib/db'
 import { useTranslation } from '../i18n/context'
+import Spinner from './Spinner'
 
 export type ReviewFormValues = {
   scores: Record<string, number>
@@ -139,7 +140,13 @@ export default function ReviewForm({
       </label>
       <div className="row">
         <button type="submit" className="primary" disabled={busy}>
-          {busy ? t('common.saving') : mode === 'edit' ? t('establishment.saveChanges') : t('reviewForm.saveReview')}
+          {busy ? (
+            <Spinner size="sm" label={t('common.saving')} />
+          ) : mode === 'edit' ? (
+            t('establishment.saveChanges')
+          ) : (
+            t('reviewForm.saveReview')
+          )}
         </button>
         {onCancel && (
           <button type="button" className="ghost" onClick={onCancel} disabled={busy}>

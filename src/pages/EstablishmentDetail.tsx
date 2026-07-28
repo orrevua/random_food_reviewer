@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth'
 import { useTranslation } from '../i18n/context'
 import LocationPreview from '../components/LocationPreview'
 import ReviewRow from '../components/ReviewRow'
+import Spinner from '../components/Spinner'
 import {
   deleteEstablishment,
   errorMessage,
@@ -101,7 +102,7 @@ export default function EstablishmentDetail() {
     setSearch(next, { replace: true })
   }
 
-  if (loading) return <p>{t('common.loading')}</p>
+  if (loading) return <Spinner block label={t('common.loading')} />
   if (!est)
     return (
       <div className="stack">

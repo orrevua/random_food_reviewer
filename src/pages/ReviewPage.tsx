@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { useTranslation } from '../i18n/context'
 import ReviewForm, { type ReviewFormValues } from '../components/ReviewForm'
+import Spinner from '../components/Spinner'
 import {
   createReview,
   errorMessage,
@@ -85,7 +86,7 @@ export default function ReviewPage() {
     }
   }
 
-  if (loading) return <p>{t('common.loading')}</p>
+  if (loading) return <Spinner block label={t('common.loading')} />
   if (!est)
     return (
       <div className="stack">

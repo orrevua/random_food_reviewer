@@ -10,6 +10,8 @@ import {
   listCategories,
   type CategoryWithRole,
 } from '../lib/db'
+import { categoryEmoji } from '../lib/categoryEmoji'
+import Spinner from '../components/Spinner'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -83,14 +85,17 @@ export default function Dashboard() {
           <button type="submit" className="primary">{t('common.add')}</button>
         </form>
         {loading ? (
-          <p>{t('common.loading')}</p>
+          <Spinner block label={t('common.loading')} />
         ) : owned.length === 0 ? (
           <p style={{ color: 'var(--ink-soft)' }}>{t('dashboard.emptyOwned')}</p>
         ) : (
           <div className="stack">
             {owned.map((c) => (
               <div key={c.id} className="cat-card cat-card--owned">
-                <Link to={`/category/${c.id}`}>{c.name}</Link>
+                <Link to={`/category/${c.id}`} className="cat-card-main">
+                  <span className="cat-emoji" aria-hidden>{categoryEmoji(c.name)}</span>
+                  <span className="cat-card-name">{c.name}</span>
+                </Link>
                 <div className="card-actions">
                   <span className="role-badge">{t('dashboard.badgeOwner')}</span>
                   <button
@@ -117,13 +122,18 @@ export default function Dashboard() {
           />
           <button type="submit">{t('dashboard.join')}</button>
         </form>
-        {loading ? null : joined.length === 0 ? (
+        {loading ? (
+          <Spinner block label={t('common.loading')} />
+        ) : joined.length === 0 ? (
           <p style={{ color: 'var(--ink-soft)' }}>{t('dashboard.emptyJoined')}</p>
         ) : (
           <div className="stack">
             {joined.map((c) => (
               <div key={c.id} className="cat-card cat-card--joined">
-                <Link to={`/category/${c.id}`}>{c.name}</Link>
+                <Link to={`/category/${c.id}`} className="cat-card-main">
+                  <span className="cat-emoji" aria-hidden>{categoryEmoji(c.name)}</span>
+                  <span className="cat-card-name">{c.name}</span>
+                </Link>
                 <span className="role-badge">{t('dashboard.badgeMember')}</span>
               </div>
             ))}

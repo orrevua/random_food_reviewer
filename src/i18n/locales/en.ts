@@ -18,6 +18,10 @@ const en: { [K in keyof typeof pt]: string } = {
   // App shell
   'app.signOut': 'Sign out',
 
+  // Theme
+  'theme.switchToDark': 'Dark mode',
+  'theme.switchToLight': 'Light mode',
+
   // Login
   'login.welcomeBack': 'Welcome back — sign in to continue.',
   'login.createAccountCta': 'Create an account to start reviewing.',

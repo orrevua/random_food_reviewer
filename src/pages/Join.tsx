@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { errorMessage, joinCategory } from '../lib/db'
 import { useTranslation } from '../i18n/context'
+import Spinner from '../components/Spinner'
 
 export default function Join() {
   const { id } = useParams<{ id: string }>()
@@ -29,7 +30,11 @@ export default function Join() {
   return (
     <div className="stack">
       <h2>{t('join.title')}</h2>
-      {error ? <p className="msg-error">{error}</p> : <p>{t('join.processing')}</p>}
+      {error ? (
+        <p className="msg-error">{error}</p>
+      ) : (
+        <Spinner block label={t('join.processing')} />
+      )}
     </div>
   )
 }

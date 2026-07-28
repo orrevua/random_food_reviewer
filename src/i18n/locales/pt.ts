@@ -16,6 +16,10 @@ const pt = {
   // App shell
   'app.signOut': 'Sair',
 
+  // Theme
+  'theme.switchToDark': 'Modo escuro',
+  'theme.switchToLight': 'Modo claro',
+
   // Login
   'login.welcomeBack': 'Bem-vindo de volta — entre para continuar.',
   'login.createAccountCta': 'Crie uma conta para começar a avaliar.',

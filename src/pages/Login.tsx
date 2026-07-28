@@ -3,6 +3,8 @@ import { useAuth } from '../lib/auth'
 import { errorMessage } from '../lib/db'
 import { useTranslation } from '../i18n/context'
 import LangToggle from '../components/LangToggle'
+import ThemeToggle from '../components/ThemeToggle'
+import Spinner from '../components/Spinner'
 
 export default function Login() {
   const { signIn, signUp } = useAuth()
@@ -43,6 +45,7 @@ export default function Login() {
     <div className="auth-shell">
       <div className="auth-card">
         <div className="row" style={{ justifyContent: 'flex-end' }}>
+          <ThemeToggle />
           <LangToggle />
         </div>
         <div className="auth-brand">
@@ -82,7 +85,13 @@ export default function Login() {
           </div>
 
           <button type="submit" className="primary" disabled={busy} style={{ width: '100%' }}>
-            {busy ? t('common.pleaseWait') : mode === 'in' ? t('login.signIn') : t('login.createAccount')}
+            {busy ? (
+              <Spinner size="sm" label={t('common.pleaseWait')} />
+            ) : mode === 'in' ? (
+              t('login.signIn')
+            ) : (
+              t('login.createAccount')
+            )}
           </button>
         </form>
 

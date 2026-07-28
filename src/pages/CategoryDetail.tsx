@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { useTranslation } from '../i18n/context'
 import StarBar from '../components/StarBar'
+import Spinner from '../components/Spinner'
+import { categoryEmoji } from '../lib/categoryEmoji'
 import {
   createEstablishment,
   createTopic,
@@ -125,6 +127,9 @@ export default function CategoryDetail() {
       <p><Link to="/">{t('common.back')}</Link></p>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <h2>
+          {category && (
+            <span aria-hidden style={{ marginRight: 8 }}>{categoryEmoji(category.name)}</span>
+          )}
           {category ? category.name : t('category.fallbackTitle')}{' '}
           {role && <RoleBadge role={role} />}
         </h2>
@@ -201,7 +206,9 @@ export default function CategoryDetail() {
 
       <div className="card stack">
         <strong>{t('category.members', { n: members.length })}</strong>
-        {members.length === 0 ? (
+        {loading ? (
+          <Spinner block label={t('common.loading')} />
+        ) : members.length === 0 ? (
           <p style={{ color: 'var(--ink-soft)' }}>{t('category.membersEmpty')}</p>
         ) : (
           <ul className="stack" style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
@@ -222,7 +229,7 @@ export default function CategoryDetail() {
 
       {error && <p className="msg-error">{error}</p>}
       {loading ? (
-        <p>{t('common.loading')}</p>
+        <Spinner block label={t('common.loading')} />
       ) : rows.length === 0 ? (
         <p>{t('category.emptyEstablishments')}</p>
       ) : (

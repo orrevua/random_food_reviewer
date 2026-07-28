@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './lib/auth'
 import { getProfile } from './lib/db'
 import { useTranslation } from './i18n/context'
 import LangToggle from './components/LangToggle'
+import ThemeToggle from './components/ThemeToggle'
+import Spinner from './components/Spinner'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import CategoryDetail from './pages/CategoryDetail'
@@ -36,7 +38,7 @@ function Shell() {
   if (loading) {
     return (
       <div className="auth-shell">
-        <p style={{ color: 'var(--ink-soft)' }}>{t('common.loading')}</p>
+        <Spinner size="lg" label={t('common.loading')} block />
       </div>
     )
   }
@@ -51,6 +53,7 @@ function Shell() {
             <span>Food Reviewer</span>
           </Link>
           <div className="header-actions">
+            <ThemeToggle />
             <LangToggle />
             <Link to="/profile" className="user-chip" title={t('app.signOut')}>
               <span className="user-chip-avatar" aria-hidden>👤</span>
