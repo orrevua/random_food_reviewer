@@ -19,8 +19,10 @@ const en: { [K in keyof typeof pt]: string } = {
   'app.signOut': 'Sign out',
 
   // Theme
-  'theme.switchToDark': 'Dark mode',
-  'theme.switchToLight': 'Light mode',
+  'theme.change': 'Change theme ({{name}})',
+  'theme.name.light': 'Light',
+  'theme.name.dark': 'Dark',
+  'theme.name.feast': 'Foodie',
 
   // Login
   'login.welcomeBack': 'Welcome back — sign in to continue.',
@@ -72,6 +74,7 @@ const en: { [K in keyof typeof pt]: string } = {
   'category.newEstablishmentPlaceholder': 'New establishment',
   'category.addressPlaceholder': 'Address (optional)',
   'category.instagramPlaceholder': 'Instagram @ (optional)',
+  'category.establishments': 'Establishments ({{n}})',
   'category.emptyEstablishments': 'No establishments yet.',
   'category.reviewsCount': '{{n}} reviews',
   'category.reviewOne': 'Review',

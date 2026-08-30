@@ -17,8 +17,10 @@ const pt = {
   'app.signOut': 'Sair',
 
   // Theme
-  'theme.switchToDark': 'Modo escuro',
-  'theme.switchToLight': 'Modo claro',
+  'theme.change': 'Mudar tema ({{name}})',
+  'theme.name.light': 'Claro',
+  'theme.name.dark': 'Escuro',
+  'theme.name.feast': 'Comidinha',
 
   // Login
   'login.welcomeBack': 'Bem-vindo de volta — entre para continuar.',
@@ -70,6 +72,7 @@ const pt = {
   'category.newEstablishmentPlaceholder': 'Novo estabelecimento',
   'category.addressPlaceholder': 'Endereço (opcional)',
   'category.instagramPlaceholder': 'Instagram @ (opcional)',
+  'category.establishments': 'Estabelecimentos ({{n}})',
   'category.emptyEstablishments': 'Nenhum estabelecimento ainda.',
   'category.reviewsCount': '{{n}} avaliações',
   'category.reviewOne': 'Avaliar',

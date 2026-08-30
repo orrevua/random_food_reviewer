@@ -3,8 +3,10 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './lib/auth'
 import { getProfile } from './lib/db'
 import { useTranslation } from './i18n/context'
+import { useTheme } from './lib/theme'
 import LangToggle from './components/LangToggle'
 import ThemeToggle from './components/ThemeToggle'
+import FoodBackground from './components/FoodBackground'
 import Spinner from './components/Spinner'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -17,6 +19,7 @@ import Profile from './pages/Profile'
 function Shell() {
   const { session, loading, signOut, user } = useAuth()
   const { t } = useTranslation()
+  const { theme } = useTheme()
   const [displayName, setDisplayName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -35,17 +38,29 @@ function Shell() {
     }
   }, [user])
 
+  const foodBg = theme === 'feast' ? <FoodBackground /> : null
+
   if (loading) {
     return (
-      <div className="auth-shell">
-        <Spinner size="lg" label={t('common.loading')} block />
-      </div>
+      <>
+        {foodBg}
+        <div className="auth-shell">
+          <Spinner size="lg" label={t('common.loading')} block />
+        </div>
+      </>
     )
   }
-  if (!session) return <Login />
+  if (!session)
+    return (
+      <>
+        {foodBg}
+        <Login />
+      </>
+    )
 
   return (
     <BrowserRouter>
+      {foodBg}
       <header className="app-header">
         <div className="app-header-inner">
           <Link to="/" className="app-brand">

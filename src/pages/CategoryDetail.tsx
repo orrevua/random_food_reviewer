@@ -51,7 +51,7 @@ export default function CategoryDetail() {
     '',
   )
   const [rollResult, setRollResult] = useState<Establishment | null | 'empty'>(null)
-  const [showManage, setShowManage] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [copied, setCopied] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
@@ -172,7 +172,7 @@ export default function CategoryDetail() {
   return (
     <div className="stack">
       <p><Link to="/">{t('common.back')}</Link></p>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
+      <div className="cat-detail-head">
         {editingName ? (
           <div className="row" style={{ flex: 1, minWidth: 0 }}>
             <input
@@ -193,30 +193,49 @@ export default function CategoryDetail() {
             </button>
           </div>
         ) : (
-          <h2 className="row" style={{ minWidth: 0 }}>
-            {category && (
-              <span aria-hidden style={{ marginRight: 8 }}>{categoryEmoji(category.name)}</span>
+          <>
+            <h2 className="row" style={{ minWidth: 0 }}>
+              {category && (
+                <span aria-hidden style={{ marginRight: 8 }}>{categoryEmoji(category.name)}</span>
+              )}
+              <span className="cat-card-name">{category ? category.name : t('category.fallbackTitle')}</span>{' '}
+              {role && <RoleBadge role={role} />}
+              {role === 'owner' && category && (
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={startEditName}
+                  aria-label={t('category.editName')}
+                  title={t('category.editName')}
+                  style={{ fontSize: 14 }}
+                >
+                  ✏️
+                </button>
+              )}
+            </h2>
+            {role === 'owner' && (
+              <div className="row" style={{ gap: 6 }}>
+                <button
+                  type="button"
+                  className="ghost icon-btn"
+                  onClick={onShare}
+                  aria-label={t('category.share')}
+                  title={copied ? t('category.copied') : t('category.share')}
+                >
+                  {copied ? '✅' : '🔗'}
+                </button>
+                <button
+                  type="button"
+                  className="ghost icon-btn"
+                  onClick={() => setShowSettings(true)}
+                  aria-label={t('category.manageTopics')}
+                  title={t('category.manageTopics')}
+                >
+                  ⚙️
+                </button>
+              </div>
             )}
-            <span className="cat-card-name">{category ? category.name : t('category.fallbackTitle')}</span>{' '}
-            {role && <RoleBadge role={role} />}
-            {role === 'owner' && category && (
-              <button
-                type="button"
-                className="ghost"
-                onClick={startEditName}
-                aria-label={t('category.editName')}
-                title={t('category.editName')}
-                style={{ fontSize: 14 }}
-              >
-                ✏️
-              </button>
-            )}
-          </h2>
-        )}
-        {role === 'owner' && !editingName && (
-          <button type="button" onClick={onShare}>
-            {copied ? t('category.copied') : t('category.share')}
-          </button>
+          </>
         )}
       </div>
       {role === 'owner' && copied && (
@@ -225,33 +244,15 @@ export default function CategoryDetail() {
         </p>
       )}
 
-      {role === 'owner' && (
-        <div className="card stack">
-          <div className="row" style={{ justifyContent: 'space-between' }}>
-            <strong>{t('category.manageTopics')}</strong>
-            <button
-              type="button"
-              className="ghost"
-              onClick={() => setShowManage((v) => !v)}
-            >
-              {showManage ? t('common.close') : t('common.open')}
-            </button>
-          </div>
-          {showManage && (
-            <ManageTopics
-              topics={topics}
-              categoryId={id!}
-              onChange={load}
-              setError={setError}
-            />
-          )}
-        </div>
-      )}
-
       <div className="card stack">
-        <button type="button" className="primary" onClick={onRoll} style={{ fontSize: 20 }}>
-          {t('category.rollDice')}
-        </button>
+        <div className="action-buttons">
+          <button type="button" className="primary" onClick={onRoll} style={{ fontSize: 18 }}>
+            {t('category.rollDice')}
+          </button>
+          <button type="button" onClick={() => setShowAddEst(true)}>
+            {t('category.addEstablishment')}
+          </button>
+        </div>
         {rollResult === 'empty' && <p>{t('category.allReviewed')}</p>}
         {rollResult && rollResult !== 'empty' && (
           <p>
@@ -263,44 +264,39 @@ export default function CategoryDetail() {
         )}
       </div>
 
-      <button type="button" className="primary" onClick={() => setShowAddEst(true)}>
-        ➕ {t('category.addEstablishment')}
-      </button>
-
-      <div className="card stack">
-        <strong>{t('category.members', { n: members.length })}</strong>
+      <div className="member-strip">
+        <span className="member-strip-label">{t('category.members', { n: members.length })}</span>
         {loading ? (
-          <Spinner block label={t('common.loading')} />
+          <Spinner size="sm" label={t('common.loading')} />
         ) : members.length === 0 ? (
-          <p style={{ color: 'var(--ink-soft)' }}>{t('category.membersEmpty')}</p>
+          <span style={{ color: 'var(--ink-soft)', fontSize: 13 }}>{t('category.membersEmpty')}</span>
         ) : (
-          <ul className="stack" style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
-            {members.map((m) => (
-              <li key={m.user_id}>
-                <button
-                  type="button"
-                  className="member-row"
-                  onClick={() => setActiveMember(m)}
-                >
-                  <span>
-                    {m.display_name ?? t('common.user')}
-                    {user?.id === m.user_id && t('reviewRow.youSuffix')}
-                  </span>
-                  <span className="role-badge">
-                    {m.role === 'owner' ? t('dashboard.badgeOwner') : t('dashboard.badgeMember')}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          members.map((m) => (
+            <button
+              key={m.user_id}
+              type="button"
+              className={`member-chip${m.role === 'owner' ? ' member-chip--owner' : ''}`}
+              onClick={() => setActiveMember(m)}
+            >
+              <span className="member-chip-avatar" aria-hidden>👤</span>
+              <span>
+                {m.display_name ?? t('common.user')}
+                {user?.id === m.user_id && t('reviewRow.youSuffix')}
+              </span>
+            </button>
+          ))
         )}
       </div>
 
       {error && <p className="msg-error">{error}</p>}
+
+      <div className="section-head">
+        <strong>{t('category.establishments', { n: rows.length })}</strong>
+      </div>
       {loading ? (
         <Spinner block label={t('common.loading')} />
       ) : rows.length === 0 ? (
-        <p>{t('category.emptyEstablishments')}</p>
+        <p style={{ color: 'var(--ink-soft)' }}>{t('category.emptyEstablishments')}</p>
       ) : (
         <div className="stack">
           {rows.map((r) => (
@@ -313,6 +309,23 @@ export default function CategoryDetail() {
             />
           ))}
         </div>
+      )}
+
+      {showSettings && role === 'owner' && (
+        <Modal onClose={() => setShowSettings(false)}>
+          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>{t('category.manageTopics')}</h2>
+            <button
+              type="button"
+              className="ghost"
+              onClick={() => setShowSettings(false)}
+              aria-label={t('common.close')}
+            >
+              ✕
+            </button>
+          </div>
+          <ManageTopics topics={topics} categoryId={id!} onChange={load} setError={setError} />
+        </Modal>
       )}
 
       {showAddEst && (
