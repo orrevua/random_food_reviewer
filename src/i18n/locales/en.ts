@@ -82,6 +82,11 @@ const en: { [K in keyof typeof pt]: string } = {
   'category.topics.confirmDelete': 'Delete this topic? Historical scores for it will be erased.',
   'category.members': 'Members ({{n}})',
   'category.membersEmpty': 'Nobody has joined yet.',
+  'category.editName': 'Edit name',
+  'category.nameEmpty': 'Name cannot be empty.',
+  'category.memberJoined': 'Joined {{date}}',
+  'category.memberReviews': 'Reviews in this category ({{n}})',
+  'category.memberNoReviews': 'No reviews in this category yet.',
 
   // EstablishmentDetail
   'establishment.notFound': 'Establishment not found.',

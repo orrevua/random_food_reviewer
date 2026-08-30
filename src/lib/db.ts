@@ -300,6 +300,17 @@ export async function deleteCategory(id: string): Promise<void> {
   if (error) throw error
 }
 
+export async function renameCategory(id: string, name: string): Promise<Category> {
+  const { data, error } = await supabase
+    .from('categories')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
 export async function getProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')

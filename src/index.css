@@ -445,6 +445,52 @@ button.ghost:hover:not(:disabled) {
   background: rgba(179, 38, 30, 0.06);
 }
 
+/* Member row (clickable) */
+.member-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  font-weight: 500;
+}
+.member-row:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(20, 10, 4, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fade-in 160ms ease-out;
+}
+.modal-panel {
+  width: 100%;
+  max-width: 460px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
 .review-row {
   border-top: 1px solid var(--border);
   padding-top: 10px;

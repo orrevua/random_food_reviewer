@@ -16,6 +16,7 @@ import {
   listCategoryMembers,
   listEstablishments,
   listTopics,
+  renameCategory,
   renameTopic,
   type Category,
   type CategoryMemberWithProfile,
@@ -41,6 +42,10 @@ export default function CategoryDetail() {
   const [rollResult, setRollResult] = useState<Establishment | null | 'empty'>(null)
   const [showManage, setShowManage] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [activeMember, setActiveMember] = useState<CategoryMemberWithProfile | null>(null)
 
   const load = useCallback(async () => {
     if (!id || !user) return
@@ -112,6 +117,35 @@ export default function CategoryDetail() {
     }
   }
 
+  const startEditName = () => {
+    setNameDraft(category?.name ?? '')
+    setEditingName(true)
+  }
+
+  const saveName = async () => {
+    if (!id) return
+    const next = nameDraft.trim()
+    if (!next) {
+      setError(t('category.nameEmpty'))
+      return
+    }
+    if (next === category?.name) {
+      setEditingName(false)
+      return
+    }
+    setSavingName(true)
+    setError(null)
+    try {
+      const updated = await renameCategory(id, next)
+      setCategory(updated)
+      setEditingName(false)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setSavingName(false)
+    }
+  }
+
   const onDeleteEstablishment = async (e: Establishment) => {
     if (!confirm(t('category.confirmDeleteEstablishment', { name: e.name }))) return
     try {
@@ -126,14 +160,47 @@ export default function CategoryDetail() {
     <div className="stack">
       <p><Link to="/">{t('common.back')}</Link></p>
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h2>
-          {category && (
-            <span aria-hidden style={{ marginRight: 8 }}>{categoryEmoji(category.name)}</span>
-          )}
-          {category ? category.name : t('category.fallbackTitle')}{' '}
-          {role && <RoleBadge role={role} />}
-        </h2>
-        {role === 'owner' && (
+        {editingName ? (
+          <div className="row" style={{ flex: 1, minWidth: 0 }}>
+            <input
+              autoFocus
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveName()
+                if (e.key === 'Escape') setEditingName(false)
+              }}
+              disabled={savingName}
+            />
+            <button type="button" className="primary" onClick={saveName} disabled={savingName}>
+              {savingName ? <Spinner size="sm" label={t('common.saving')} /> : t('common.save')}
+            </button>
+            <button type="button" className="ghost" onClick={() => setEditingName(false)} disabled={savingName}>
+              {t('common.cancel')}
+            </button>
+          </div>
+        ) : (
+          <h2 className="row" style={{ minWidth: 0 }}>
+            {category && (
+              <span aria-hidden style={{ marginRight: 8 }}>{categoryEmoji(category.name)}</span>
+            )}
+            <span className="cat-card-name">{category ? category.name : t('category.fallbackTitle')}</span>{' '}
+            {role && <RoleBadge role={role} />}
+            {role === 'owner' && category && (
+              <button
+                type="button"
+                className="ghost"
+                onClick={startEditName}
+                aria-label={t('category.editName')}
+                title={t('category.editName')}
+                style={{ fontSize: 14 }}
+              >
+                ✏️
+              </button>
+            )}
+          </h2>
+        )}
+        {role === 'owner' && !editingName && (
           <button type="button" onClick={onShare}>
             {copied ? t('category.copied') : t('category.share')}
           </button>
@@ -213,14 +280,20 @@ export default function CategoryDetail() {
         ) : (
           <ul className="stack" style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
             {members.map((m) => (
-              <li key={m.user_id} className="row" style={{ justifyContent: 'space-between' }}>
-                <span>
-                  {m.display_name ?? t('common.user')}
-                  {user?.id === m.user_id && t('reviewRow.youSuffix')}
-                </span>
-                <span className="role-badge">
-                  {m.role === 'owner' ? t('dashboard.badgeOwner') : t('dashboard.badgeMember')}
-                </span>
+              <li key={m.user_id}>
+                <button
+                  type="button"
+                  className="member-row"
+                  onClick={() => setActiveMember(m)}
+                >
+                  <span>
+                    {m.display_name ?? t('common.user')}
+                    {user?.id === m.user_id && t('reviewRow.youSuffix')}
+                  </span>
+                  <span className="role-badge">
+                    {m.role === 'owner' ? t('dashboard.badgeOwner') : t('dashboard.badgeMember')}
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
@@ -244,6 +317,15 @@ export default function CategoryDetail() {
             />
           ))}
         </div>
+      )}
+
+      {activeMember && (
+        <MemberActivity
+          member={activeMember}
+          establishments={rows}
+          isCurrentUser={user?.id === activeMember.user_id}
+          onClose={() => setActiveMember(null)}
+        />
       )}
     </div>
   )
@@ -331,6 +413,111 @@ function RoleBadge({ role }: { role: 'owner' | 'member' }) {
     <span className="role-badge" style={{ marginLeft: 8, verticalAlign: 'middle' }}>
       {role === 'owner' ? t('dashboard.badgeOwner') : t('dashboard.badgeMember')}
     </span>
+  )
+}
+
+function MemberActivity({
+  member,
+  establishments,
+  isCurrentUser,
+  onClose,
+}: {
+  member: CategoryMemberWithProfile
+  establishments: EstablishmentWithReview[]
+  isCurrentUser: boolean
+  onClose: () => void
+}) {
+  const { t, locale } = useTranslation()
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const reviewed = establishments
+    .map((est) => {
+      const review = (est.reviews ?? []).find((r) => r.user_id === member.user_id)
+      if (!review) return null
+      const ratings = review.review_ratings ?? []
+      const avg =
+        ratings.length > 0 ? ratings.reduce((s, x) => s + x.score, 0) / ratings.length : null
+      return { est, avg }
+    })
+    .filter((v): v is { est: EstablishmentWithReview; avg: number | null } => v != null)
+
+  const name = member.display_name ?? t('common.user')
+  const joined = new Date(member.joined_at).toLocaleDateString(locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div
+        className="modal-panel stack"
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div className="stack" style={{ gap: 4 }}>
+            <h2 className="row" style={{ gap: 8 }}>
+              <span>
+                {name}
+                {isCurrentUser && t('reviewRow.youSuffix')}
+              </span>
+              <span className="role-badge">
+                {member.role === 'owner' ? t('dashboard.badgeOwner') : t('dashboard.badgeMember')}
+              </span>
+            </h2>
+            <span style={{ color: 'var(--ink-soft)', fontSize: 13 }}>
+              {t('category.memberJoined', { date: joined })}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="ghost"
+            onClick={onClose}
+            aria-label={t('common.close')}
+          >
+            ✕
+          </button>
+        </div>
+
+        <strong>{t('category.memberReviews', { n: reviewed.length })}</strong>
+        {reviewed.length === 0 ? (
+          <p style={{ color: 'var(--ink-soft)' }}>{t('category.memberNoReviews')}</p>
+        ) : (
+          <ul className="stack" style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
+            {reviewed.map(({ est, avg }) => (
+              <li key={est.id} className="row" style={{ justifyContent: 'space-between', gap: 12 }}>
+                <Link
+                  to={`/establishment/${est.id}`}
+                  className="est-row-name"
+                  onClick={onClose}
+                >
+                  {est.name}
+                </Link>
+                <span className="row" style={{ gap: 8 }}>
+                  {avg != null ? (
+                    <>
+                      <StarBar value={avg} max={10} />
+                      <span style={{ fontWeight: 600 }}>{avg.toFixed(2)}</span>
+                    </>
+                  ) : (
+                    <span style={{ color: 'var(--ink-soft)' }}>—</span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   )
 }
 

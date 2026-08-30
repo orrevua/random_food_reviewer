@@ -80,6 +80,11 @@ const pt = {
   'category.topics.confirmDelete': 'Excluir este tópico? Isso apaga as notas históricas dele.',
   'category.members': 'Membros ({{n}})',
   'category.membersEmpty': 'Ninguém entrou ainda.',
+  'category.editName': 'Editar nome',
+  'category.nameEmpty': 'O nome não pode ficar vazio.',
+  'category.memberJoined': 'Entrou em {{date}}',
+  'category.memberReviews': 'Avaliações nesta categoria ({{n}})',
+  'category.memberNoReviews': 'Nenhuma avaliação nesta categoria ainda.',
 
   // EstablishmentDetail
   'establishment.notFound': 'Estabelecimento não encontrado.',
