@@ -68,6 +68,7 @@ const en: { [K in keyof typeof pt]: string } = {
   'category.rollDice': '🎲 Roll the dice',
   'category.allReviewed': 'All reviewed — add more!',
   'category.goTo': 'Go to: ',
+  'category.addEstablishment': 'Add establishment',
   'category.newEstablishmentPlaceholder': 'New establishment',
   'category.addressPlaceholder': 'Address (optional)',
   'category.instagramPlaceholder': 'Instagram @ (optional)',

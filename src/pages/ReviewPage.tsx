@@ -56,8 +56,8 @@ export default function ReviewPage() {
     load()
   }, [load])
 
-  const onSubmit = async (values: ReviewFormValues) => {
-    if (!user || !est) return
+  const onSubmit = async (values: ReviewFormValues): Promise<boolean> => {
+    if (!user || !est) return false
     setBusy(true)
     setError(null)
     try {
@@ -79,8 +79,10 @@ export default function ReviewPage() {
         await createReview(user.id, est.id, values.notes, scoreList, values.photoFile)
       }
       navigate(`/establishment/${est.id}`)
+      return true
     } catch (err) {
       setError(errorMessage(err))
+      return false
     } finally {
       setBusy(false)
     }
@@ -114,6 +116,7 @@ export default function ReviewPage() {
         initialPhotoUrl={existing?.photo_url ?? null}
         busy={busy}
         error={error}
+        persistKey={`draft.review.${est.id}`}
         onSubmit={onSubmit}
         onCancel={() => navigate(`/establishment/${est.id}`)}
       />

@@ -66,6 +66,7 @@ const pt = {
   'category.rollDice': '🎲 Rolar dado',
   'category.allReviewed': 'Todos avaliados — adicione mais!',
   'category.goTo': 'Vai em: ',
+  'category.addEstablishment': 'Adicionar estabelecimento',
   'category.newEstablishmentPlaceholder': 'Novo estabelecimento',
   'category.addressPlaceholder': 'Endereço (opcional)',
   'category.instagramPlaceholder': 'Instagram @ (opcional)',

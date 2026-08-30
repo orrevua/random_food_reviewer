@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { ReviewTopic } from '../lib/db'
 import { useTranslation } from '../i18n/context'
+import { usePersistedState } from '../lib/usePersistedState'
 import Spinner from './Spinner'
 
 export type ReviewFormValues = {
@@ -18,6 +19,7 @@ export default function ReviewForm({
   initialPhotoUrl = null,
   busy = false,
   error = null,
+  persistKey = null,
   onSubmit,
   onCancel,
 }: {
@@ -28,14 +30,21 @@ export default function ReviewForm({
   initialPhotoUrl?: string | null
   busy?: boolean
   error?: string | null
-  onSubmit: (values: ReviewFormValues) => void | Promise<void>
+  /** When set, notes/scores are persisted to localStorage under this key so an
+   *  in-progress review survives navigation and PWA reloads. */
+  persistKey?: string | null
+  onSubmit: (values: ReviewFormValues) => boolean | void | Promise<boolean | void>
   onCancel?: () => void
 }) {
   const { t } = useTranslation()
-  const [scores, setScores] = useState<Record<string, number>>(() =>
+  const [scores, setScores, clearScores] = usePersistedState<Record<string, number>>(
+    persistKey ? `${persistKey}.scores` : null,
     Object.fromEntries(topics.map((topic) => [topic.id, initialScores?.[topic.id] ?? 5])),
   )
-  const [notes, setNotes] = useState(initialNotes)
+  const [notes, setNotes, clearNotes] = usePersistedState(
+    persistKey ? `${persistKey}.notes` : null,
+    initialNotes,
+  )
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [removePhoto, setRemovePhoto] = useState(false)
@@ -46,6 +55,21 @@ export default function ReviewForm({
       if (photoPreview) URL.revokeObjectURL(photoPreview)
     }
   }, [photoPreview])
+
+  // A restored draft may predate topics added since; give any missing topic a default.
+  useEffect(() => {
+    setScores((prev) => {
+      let changed = false
+      const next = { ...prev }
+      for (const topic of topics) {
+        if (next[topic.id] == null) {
+          next[topic.id] = 5
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [topics, setScores])
 
   const onPickPhoto = (file: File | null) => {
     setPhoto(file)
@@ -63,7 +87,12 @@ export default function ReviewForm({
       return
     }
     setLocalError(null)
-    await onSubmit({ scores, notes, photoFile: photo, removePhoto })
+    const result = await onSubmit({ scores, notes, photoFile: photo, removePhoto })
+    // Drop the saved draft once the submit succeeds (onSubmit returns false on failure).
+    if (result !== false) {
+      clearScores()
+      clearNotes()
+    }
   }
 
   if (topics.length === 0) {

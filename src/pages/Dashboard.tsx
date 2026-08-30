@@ -11,6 +11,7 @@ import {
   type CategoryWithRole,
 } from '../lib/db'
 import { categoryEmoji } from '../lib/categoryEmoji'
+import { usePersistedState } from '../lib/usePersistedState'
 import Spinner from '../components/Spinner'
 
 export default function Dashboard() {
@@ -18,8 +19,8 @@ export default function Dashboard() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [categories, setCategories] = useState<CategoryWithRole[]>([])
-  const [name, setName] = useState('')
-  const [inviteId, setInviteId] = useState('')
+  const [name, setName, clearName] = usePersistedState('draft.dashboard.newCategory', '')
+  const [inviteId, setInviteId, clearInvite] = usePersistedState('draft.dashboard.invite', '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -38,7 +39,7 @@ export default function Dashboard() {
     try {
       const c = await createCategory(user.id, name.trim())
       setCategories((prev) => [{ ...c, role: 'owner' }, ...prev])
-      setName('')
+      clearName()
     } catch (err) {
       setError(errorMessage(err))
     }
@@ -50,6 +51,7 @@ export default function Dashboard() {
     setError(null)
     try {
       await joinCategory(inviteId.trim(), user.id)
+      clearInvite()
       navigate(`/category/${inviteId.trim()}`)
     } catch (err) {
       setError(errorMessage(err))

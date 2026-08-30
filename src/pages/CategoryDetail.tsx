@@ -4,7 +4,9 @@ import { useAuth } from '../lib/auth'
 import { useTranslation } from '../i18n/context'
 import StarBar from '../components/StarBar'
 import Spinner from '../components/Spinner'
+import Modal from '../components/Modal'
 import { categoryEmoji } from '../lib/categoryEmoji'
+import { usePersistedState } from '../lib/usePersistedState'
 import {
   createEstablishment,
   createTopic,
@@ -36,9 +38,18 @@ export default function CategoryDetail() {
   const [members, setMembers] = useState<CategoryMemberWithProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [newName, setNewName] = useState('')
-  const [newAddress, setNewAddress] = useState('')
-  const [newInsta, setNewInsta] = useState('')
+  const [newName, setNewName, clearNewName] = usePersistedState(
+    id ? `draft.category.${id}.estName` : null,
+    '',
+  )
+  const [newAddress, setNewAddress, clearNewAddress] = usePersistedState(
+    id ? `draft.category.${id}.estAddress` : null,
+    '',
+  )
+  const [newInsta, setNewInsta, clearNewInsta] = usePersistedState(
+    id ? `draft.category.${id}.estInsta` : null,
+    '',
+  )
   const [rollResult, setRollResult] = useState<Establishment | null | 'empty'>(null)
   const [showManage, setShowManage] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -46,6 +57,7 @@ export default function CategoryDetail() {
   const [nameDraft, setNameDraft] = useState('')
   const [savingName, setSavingName] = useState(false)
   const [activeMember, setActiveMember] = useState<CategoryMemberWithProfile | null>(null)
+  const [showAddEst, setShowAddEst] = useState(false)
 
   const load = useCallback(async () => {
     if (!id || !user) return
@@ -85,9 +97,10 @@ export default function CategoryDetail() {
         newAddress.trim() ? newAddress.trim() : null,
         newInsta.trim() ? newInsta.trim().replace(/^@/, '') : null,
       )
-      setNewName('')
-      setNewAddress('')
-      setNewInsta('')
+      clearNewName()
+      clearNewAddress()
+      clearNewInsta()
+      setShowAddEst(false)
       await load()
     } catch (err) {
       setError(errorMessage(err))
@@ -250,26 +263,9 @@ export default function CategoryDetail() {
         )}
       </div>
 
-      <form className="stack" onSubmit={onAdd}>
-        <div className="row">
-          <input
-            placeholder={t('category.newEstablishmentPlaceholder')}
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-          />
-          <button type="submit">{t('common.add')}</button>
-        </div>
-        <input
-          placeholder={t('category.addressPlaceholder')}
-          value={newAddress}
-          onChange={(e) => setNewAddress(e.target.value)}
-        />
-        <input
-          placeholder={t('category.instagramPlaceholder')}
-          value={newInsta}
-          onChange={(e) => setNewInsta(e.target.value)}
-        />
-      </form>
+      <button type="button" className="primary" onClick={() => setShowAddEst(true)}>
+        ➕ {t('category.addEstablishment')}
+      </button>
 
       <div className="card stack">
         <strong>{t('category.members', { n: members.length })}</strong>
@@ -317,6 +313,43 @@ export default function CategoryDetail() {
             />
           ))}
         </div>
+      )}
+
+      {showAddEst && (
+        <Modal onClose={() => setShowAddEst(false)}>
+          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>{t('category.addEstablishment')}</h2>
+            <button
+              type="button"
+              className="ghost"
+              onClick={() => setShowAddEst(false)}
+              aria-label={t('common.close')}
+            >
+              ✕
+            </button>
+          </div>
+          <form className="stack" onSubmit={onAdd}>
+            <input
+              autoFocus
+              placeholder={t('category.newEstablishmentPlaceholder')}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+            <input
+              placeholder={t('category.addressPlaceholder')}
+              value={newAddress}
+              onChange={(e) => setNewAddress(e.target.value)}
+            />
+            <input
+              placeholder={t('category.instagramPlaceholder')}
+              value={newInsta}
+              onChange={(e) => setNewInsta(e.target.value)}
+            />
+            <button type="submit" className="primary" disabled={!newName.trim()}>
+              {t('common.add')}
+            </button>
+          </form>
+        </Modal>
       )}
 
       {activeMember && (
@@ -429,14 +462,6 @@ function MemberActivity({
 }) {
   const { t, locale } = useTranslation()
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   const reviewed = establishments
     .map((est) => {
       const review = (est.reviews ?? []).find((r) => r.user_id === member.user_id)
@@ -456,14 +481,8 @@ function MemberActivity({
   })
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div
-        className="modal-panel stack"
-        role="dialog"
-        aria-modal="true"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <Modal onClose={onClose}>
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div className="stack" style={{ gap: 4 }}>
             <h2 className="row" style={{ gap: 8 }}>
               <span>
@@ -516,8 +535,7 @@ function MemberActivity({
             ))}
           </ul>
         )}
-      </div>
-    </div>
+    </Modal>
   )
 }
 
