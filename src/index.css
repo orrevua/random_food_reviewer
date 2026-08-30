@@ -46,14 +46,27 @@
   color-scheme: light;
 }
 
-/* Feast theme decorative food pattern */
+/* Feast theme decorative food pattern (accent-colored emoji silhouettes) */
 .food-bg {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 26px;
+  padding: 22px;
+  opacity: 0.13;
 }
-.food-bg svg { display: block; width: 100%; height: 100%; }
+.food-bg span {
+  font-size: 40px;
+  line-height: 1;
+  /* Render the color emoji as a flat accent-colored silhouette. */
+  color: transparent;
+  text-shadow: 0 0 0 var(--accent);
+}
 
 * { box-sizing: border-box; }
 
