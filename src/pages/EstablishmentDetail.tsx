@@ -5,6 +5,7 @@ import { useTranslation } from '../i18n/context'
 import LocationPreview from '../components/LocationPreview'
 import ReviewRow from '../components/ReviewRow'
 import Spinner from '../components/Spinner'
+import { usePersistedState } from '../lib/usePersistedState'
 import {
   deleteEstablishment,
   errorMessage,
@@ -211,9 +212,15 @@ function EditInfoForm({
   onError: (msg: string) => void
 }) {
   const { t } = useTranslation()
-  const [name, setName] = useState(est.name)
-  const [address, setAddress] = useState(est.address ?? '')
-  const [insta, setInsta] = useState(est.instagram_handle ?? '')
+  const [name, setName, clearName] = usePersistedState(`draft.est.${est.id}.name`, est.name)
+  const [address, setAddress, clearAddress] = usePersistedState(
+    `draft.est.${est.id}.address`,
+    est.address ?? '',
+  )
+  const [insta, setInsta, clearInsta] = usePersistedState(
+    `draft.est.${est.id}.insta`,
+    est.instagram_handle ?? '',
+  )
   const [busy, setBusy] = useState(false)
 
   const submit = async (e: FormEvent) => {
@@ -226,6 +233,9 @@ function EditInfoForm({
         address: address.trim() ? address.trim() : null,
         instagram_handle: insta.trim() ? insta.trim().replace(/^@/, '') : null,
       })
+      clearName()
+      clearAddress()
+      clearInsta()
       await onSaved()
     } catch (err) {
       onError(errorMessage(err))
