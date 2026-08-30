@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { ReviewTopic } from '../lib/db'
 import { useTranslation } from '../i18n/context'
-import { usePersistedState } from '../lib/usePersistedState'
 import Spinner from './Spinner'
 
 export type ReviewFormValues = {
@@ -9,6 +8,18 @@ export type ReviewFormValues = {
   notes: string
   photoFile: File | null
   removePhoto: boolean
+}
+
+type ReviewDraft = { base: string; scores: Record<string, number>; notes: string }
+
+function readDraft(key: string | null): ReviewDraft | null {
+  if (!key) return null
+  try {
+    const raw = window.localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as ReviewDraft) : null
+  } catch {
+    return null
+  }
 }
 
 export default function ReviewForm({
@@ -37,14 +48,24 @@ export default function ReviewForm({
   onCancel?: () => void
 }) {
   const { t } = useTranslation()
-  const [scores, setScores, clearScores] = usePersistedState<Record<string, number>>(
-    persistKey ? `${persistKey}.scores` : null,
-    Object.fromEntries(topics.map((topic) => [topic.id, initialScores?.[topic.id] ?? 5])),
+
+  const defaultScores = Object.fromEntries(
+    topics.map((topic) => [topic.id, initialScores?.[topic.id] ?? 5]),
   )
-  const [notes, setNotes, clearNotes] = usePersistedState(
-    persistKey ? `${persistKey}.notes` : null,
-    initialNotes,
-  )
+  // Signature of the saved values this draft is based on. A stored draft is only
+  // restored when it matches — otherwise the current saved review is shown (so an
+  // edit form always reflects the latest values, not a stale leftover draft).
+  const base =
+    topics.map((tp) => `${tp.id}:${initialScores?.[tp.id] ?? 5}`).join(',') + '|' + initialNotes
+
+  const [scores, setScores] = useState<Record<string, number>>(() => {
+    const d = readDraft(persistKey)
+    return d && d.base === base ? { ...defaultScores, ...d.scores } : defaultScores
+  })
+  const [notes, setNotes] = useState<string>(() => {
+    const d = readDraft(persistKey)
+    return d && d.base === base ? d.notes : initialNotes
+  })
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [removePhoto, setRemovePhoto] = useState(false)
@@ -56,20 +77,24 @@ export default function ReviewForm({
     }
   }, [photoPreview])
 
-  // A restored draft may predate topics added since; give any missing topic a default.
+  // Mirror the in-progress draft to storage so it survives navigation / PWA reloads.
   useEffect(() => {
-    setScores((prev) => {
-      let changed = false
-      const next = { ...prev }
-      for (const topic of topics) {
-        if (next[topic.id] == null) {
-          next[topic.id] = 5
-          changed = true
-        }
-      }
-      return changed ? next : prev
-    })
-  }, [topics, setScores])
+    if (!persistKey) return
+    try {
+      window.localStorage.setItem(persistKey, JSON.stringify({ base, scores, notes }))
+    } catch {
+      // ignore quota / private-mode failures
+    }
+  }, [persistKey, base, scores, notes])
+
+  const clearDraft = () => {
+    if (!persistKey) return
+    try {
+      window.localStorage.removeItem(persistKey)
+    } catch {
+      // ignore
+    }
+  }
 
   const onPickPhoto = (file: File | null) => {
     setPhoto(file)
@@ -89,10 +114,7 @@ export default function ReviewForm({
     setLocalError(null)
     const result = await onSubmit({ scores, notes, photoFile: photo, removePhoto })
     // Drop the saved draft once the submit succeeds (onSubmit returns false on failure).
-    if (result !== false) {
-      clearScores()
-      clearNotes()
-    }
+    if (result !== false) clearDraft()
   }
 
   if (topics.length === 0) {
